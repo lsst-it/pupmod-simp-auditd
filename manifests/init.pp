@@ -206,7 +206,7 @@ class auditd (
   Optional[Variant[Enum['simp'],Boolean]] $default_audit_profile    = undef,
   Array[Auditd::AuditProfile]             $default_audit_profiles   = [ 'simp' ],
   Boolean                                 $audit_auditd_config      = true,
-  String                                  $lname                    = $facts['fqdn'],
+  String                                  $lname                    = $facts['networking']['fqdn'],
 
   # Rule Tweaks
   Boolean                                 $ignore_anonymous         = true,
@@ -321,7 +321,9 @@ class auditd (
     ~> Class['auditd::service']
     -> Class['auditd']
 
-    Class['auditd::install'] -> Class['::auditd::config::grub']
+    if fact('grub_version') {
+      Class['auditd::install'] -> Class['::auditd::config::grub']
+    }
 
   }
   else {
@@ -332,5 +334,7 @@ class auditd (
   # auditd::config::grub with an include somewhere else. auditd::config::grub
   # would normally be a private class but may be used independently if
   # necessary.
-  class { 'auditd::config::grub': enable => $_grub_enable }
+  if fact('grub_version') {
+    class { 'auditd::config::grub': enable => $_grub_enable }
+  }
 }
